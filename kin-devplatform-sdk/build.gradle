@@ -14,6 +14,10 @@ android {
         versionName "${KIN_ECOSYSTEM_SDK_VERSION_NAME}"
         consumerProguardFiles 'proguard-rules.pro'
     }
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
 }
 
 dependencies {

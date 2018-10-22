@@ -5,9 +5,17 @@ import static kin.devplatform.exception.ClientException.SDK_NOT_STARTED;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+
+import org.stellar.sdk.xdr.Auth;
+
+import java.io.Serializable;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
+
 import kin.core.KinClient;
 import kin.core.ServiceProvider;
 import kin.devplatform.base.ObservableData;
@@ -45,6 +53,8 @@ public class Kin {
 
 	private static final String KIN_ECOSYSTEM_STORE_PREFIX_KEY = "kinecosystem_store";
 	private static Kin instance;
+
+	private Callable onActivation;
 
 	private final ExecutorsUtil executorsUtil;
 	private EventLogger eventLogger;
@@ -196,8 +206,30 @@ public class Kin {
 		}
 	}
 
+	public static boolean isActivated() {
+		return AuthRepository.getInstance() != null
+            && AuthRepository.getInstance().isActivated();
+	}
+
+	public static void setOnActivatedListener(Callable onActivation) {
+	    getInstance().onActivation = onActivation;
+    }
+
+    public static Callable getOnActivatedListener() {
+	    return instance.onActivation;
+    }
+
 	private static void navigateToSplash(@NonNull final Activity activity) {
 		activity.startActivity(new Intent(activity, SplashViewActivity.class));
+		activity.overridePendingTransition(R.anim.kinecosystem_slide_in_right, R.anim.kinecosystem_slide_out_left);
+	}
+
+	private static void navigateToSplash(Activity activity, Callable<Void> onActivation) {
+		Intent splashIntent = new Intent(activity, SplashViewActivity.class);
+		Bundle args = new Bundle();
+		args.putSerializable("on_activation", (Serializable) onActivation);
+		splashIntent.putExtras(args);
+		activity.startActivity(splashIntent);
 		activity.overridePendingTransition(R.anim.kinecosystem_slide_in_right, R.anim.kinecosystem_slide_out_left);
 	}
 

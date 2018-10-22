@@ -1,6 +1,11 @@
 package kin.devplatform.splash.presenter;
 
 import android.support.annotation.NonNull;
+import android.telecom.Call;
+
+import java.util.concurrent.Callable;
+
+import kin.devplatform.Kin;
 import kin.devplatform.KinCallback;
 import kin.devplatform.base.BasePresenter;
 import kin.devplatform.bi.EventLogger;
@@ -91,5 +96,11 @@ public class SplashPresenter extends BasePresenter<ISplashView> implements ISpla
 	public void onAnimationEnded() {
 		animationEnded = true;
 		navigateToMarketplace();
+
+		try {
+            Kin.getOnActivatedListener().call();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

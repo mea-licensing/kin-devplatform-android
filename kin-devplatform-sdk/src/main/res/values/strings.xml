@@ -30,6 +30,9 @@
 
     <!--Menu-->
     <string name="kinecosystem_info_menu">Info</string>
+    <string name="kinecosystem_ok">OK</string>
+    <string name="kinecosystem_confirm_purchase">Purchase %s for %d KIN?</string>
+    <string name="kinecosystem_cancel">Cancel</string>
 
 
 </resources>

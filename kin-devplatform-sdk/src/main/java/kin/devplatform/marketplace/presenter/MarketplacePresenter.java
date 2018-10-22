@@ -329,7 +329,10 @@ public class MarketplacePresenter extends BasePresenter<IMarketplaceView> implem
 	}
 
 	private void nativeSpendOfferClicked(Offer offer) {
-		offerRepository.getNativeSpendOfferObservable().postValue((NativeSpendOffer) offer);
+		this.view.showOfferConfirmation(offer, () -> {
+			offerRepository.getNativeSpendOfferObservable().postValue((NativeSpendOffer) offer);
+			return 0;
+		});
 	}
 
 	private void showSomethingWentWrong() {

@@ -1,6 +1,10 @@
 package kin.devplatform.marketplace.view;
 
+import android.telecom.Call;
+
 import java.util.List;
+import java.util.concurrent.Callable;
+
 import kin.devplatform.base.IBaseView;
 import kin.devplatform.marketplace.presenter.ISpendDialogPresenter;
 import kin.devplatform.marketplace.presenter.MarketplacePresenter;
@@ -18,6 +22,8 @@ public interface IMarketplaceView extends IBaseView<MarketplacePresenter> {
 	void showSpendDialog(ISpendDialogPresenter spendDialogPresenter);
 
 	void showToast(String msg);
+
+	void showOfferConfirmation(Offer offer, Callable onClick);
 
 	void notifyEarnItemRemoved(int index);
 

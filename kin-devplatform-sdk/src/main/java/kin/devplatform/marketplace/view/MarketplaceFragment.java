@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -12,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.List;
+import java.util.concurrent.Callable;
+
 import kin.devplatform.R;
 import kin.devplatform.base.BaseRecyclerAdapter;
 import kin.devplatform.base.BaseRecyclerAdapter.OnItemClickListener;
@@ -132,6 +135,27 @@ public class MarketplaceFragment extends Fragment implements IMarketplaceView {
 	@Override
 	public void showToast(String msg) {
 		Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+	}
+
+	@Override
+	public void showOfferConfirmation(Offer offer, Callable onClick) {
+		new AlertDialog.Builder(getContext())
+			.setTitle(R.string.kinecosystem_confirm)
+			.setMessage(String.format(getString(R.string.kinecosystem_confirm_purchase), offer.getTitle(), offer.getAmount()))
+            .setPositiveButton(R.string.kinecosystem_ok, (dialog, which) -> {
+                try {
+                    onClick.call();
+                    dialog.dismiss();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            })
+			.setNegativeButton(R.string.kinecosystem_cancel, (dialog, which) -> {
+				dialog.dismiss();
+			})
+            .create()
+            .show();
+
 	}
 
 	@Override

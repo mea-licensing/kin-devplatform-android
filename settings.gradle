@@ -1,1 +1,1 @@
-include ':kin-devplatform-sdk', ':sample-app', ':kin-devplatform-core'
+include ':kin-devplatform-sdk', ':kin-devplatform-core'

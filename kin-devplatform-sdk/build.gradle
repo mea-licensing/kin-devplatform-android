@@ -34,3 +34,5 @@ dependencies {
     testImplementation testingDependencies.mockito
     testImplementation testingDependencies.robolectric
 }
+
+apply from: 'deploy.gradle'

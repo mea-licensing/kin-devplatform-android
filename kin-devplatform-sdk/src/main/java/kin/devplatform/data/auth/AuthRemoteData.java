@@ -10,7 +10,9 @@ import kin.devplatform.core.util.ExecutorsUtil;
 import kin.devplatform.data.Callback;
 import kin.devplatform.network.api.AuthApi;
 import kin.devplatform.network.model.AuthToken;
+import kin.devplatform.network.model.RestorableWalletRequest;
 import kin.devplatform.network.model.SignInData;
+import kin.devplatform.network.model.UserProperties;
 
 public class AuthRemoteData implements AuthDataSource.Remote {
 
@@ -47,19 +49,9 @@ public class AuthRemoteData implements AuthDataSource.Remote {
 	}
 
 	@Override
-	@Nullable
-	public AuthToken getAuthTokenSync() {
+	public void getAuthToken(@NonNull final Callback<AuthToken, ApiException> callback) {
 		try {
-			return authApi.signIn(signInData, "");
-		} catch (ApiException e) {
-			return null;
-		}
-	}
-
-	@Override
-	public void activateAccount(@NonNull final Callback<AuthToken, ApiException> callback) {
-		try {
-			authApi.activateAcountAsync("", new ApiCallback<AuthToken>() {
+			authApi.signInAsync(signInData, "", new ApiCallback<AuthToken>() {
 				@Override
 				public void onFailure(final ApiException e, int statusCode, Map<String, List<String>> responseHeaders) {
 					executorsUtil.mainThread().execute(new Runnable() {
@@ -81,15 +73,129 @@ public class AuthRemoteData implements AuthDataSource.Remote {
 					});
 				}
 
+			});
+		} catch (final ApiException e) {
+			executorsUtil.mainThread().execute(new Runnable() {
 				@Override
-				public void onUploadProgress(long bytesWritten, long contentLength, boolean done) {
+				public void run() {
+					callback.onFailure(e);
+				}
+			});
+		}
+	}
 
+	@Override
+	@Nullable
+	public AuthToken getAuthTokenSync() {
+		try {
+			return authApi.signIn(signInData, "");
+		} catch (ApiException e) {
+			return null;
+		}
+	}
+
+	@Override
+	public void activateAccount(@NonNull final Callback<AuthToken, ApiException> callback) {
+		try {
+			authApi.activateAccountAsync("", new ApiCallback<AuthToken>() {
+				@Override
+				public void onFailure(final ApiException e, int statusCode, Map<String, List<String>> responseHeaders) {
+					executorsUtil.mainThread().execute(new Runnable() {
+						@Override
+						public void run() {
+							callback.onFailure(e);
+						}
+					});
 				}
 
 				@Override
-				public void onDownloadProgress(long bytesRead, long contentLength, boolean done) {
-
+				public void onSuccess(final AuthToken result, int statusCode,
+					Map<String, List<String>> responseHeaders) {
+					executorsUtil.mainThread().execute(new Runnable() {
+						@Override
+						public void run() {
+							callback.onResponse(result);
+						}
+					});
 				}
+
+			});
+		} catch (final ApiException e) {
+			executorsUtil.mainThread().execute(new Runnable() {
+				@Override
+				public void run() {
+					callback.onFailure(e);
+				}
+			});
+		}
+	}
+
+	@Override
+	public void isRestorableWallet(@NonNull String publicAddress,
+		@NonNull final Callback<Boolean, ApiException> callback) {
+		try {
+			authApi.isRestorableWallet(publicAddress, new ApiCallback<RestorableWalletRequest>() {
+				@Override
+				public void onFailure(final ApiException e, int statusCode, Map<String, List<String>> responseHeaders) {
+					executorsUtil.mainThread().execute(new Runnable() {
+						@Override
+						public void run() {
+							callback.onFailure(e);
+						}
+					});
+				}
+
+				@Override
+				public void onSuccess(final RestorableWalletRequest result, int statusCode,
+					Map<String, List<String>> responseHeaders) {
+					executorsUtil.mainThread().execute(new Runnable() {
+						@Override
+						public void run() {
+							if (result != null) {
+								callback.onResponse(result.isRestorable());
+							} else {
+								callback.onFailure(new ApiException("Response is null"));
+							}
+						}
+					});
+				}
+
+			});
+		} catch (final ApiException e) {
+			executorsUtil.mainThread().execute(new Runnable() {
+				@Override
+				public void run() {
+					callback.onFailure(e);
+				}
+			});
+		}
+	}
+
+	@Override
+	public void updateWalletAddress(@NonNull UserProperties userProperties,
+		@NonNull final Callback<Void, ApiException> callback) {
+		try {
+			authApi.updateUserAsync(userProperties, new ApiCallback<Void>() {
+				@Override
+				public void onFailure(final ApiException e, int statusCode, Map<String, List<String>> responseHeaders) {
+					executorsUtil.mainThread().execute(new Runnable() {
+						@Override
+						public void run() {
+							callback.onFailure(e);
+						}
+					});
+				}
+
+				@Override
+				public void onSuccess(final Void result, int statusCode, Map<String, List<String>> responseHeaders) {
+					executorsUtil.mainThread().execute(new Runnable() {
+						@Override
+						public void run() {
+							callback.onResponse(result);
+						}
+					});
+				}
+
 			});
 		} catch (final ApiException e) {
 			executorsUtil.mainThread().execute(new Runnable() {
@@ -101,3 +207,4 @@ public class AuthRemoteData implements AuthDataSource.Remote {
 		}
 	}
 }
+

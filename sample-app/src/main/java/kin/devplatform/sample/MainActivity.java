@@ -22,8 +22,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.Random;
+import kin.devplatform.Environment;
 import kin.devplatform.Kin;
 import kin.devplatform.KinCallback;
+import kin.devplatform.KinMigrationListener;
 import kin.devplatform.base.Observer;
 import kin.devplatform.data.model.Balance;
 import kin.devplatform.data.model.OrderConfirmation;
@@ -31,6 +33,7 @@ import kin.devplatform.exception.ClientException;
 import kin.devplatform.exception.KinEcosystemException;
 import kin.devplatform.marketplace.model.NativeSpendOffer;
 import kin.devplatform.sample.model.SignInRepo;
+import kin.devplatform.util.ErrorUtil;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
 	private Button nativeEarnButton;
 	private Button showPublicAddressButton;
 	private Button payToUserButton;
+	private Button getOrderConfirmationButton;
+	private boolean isInitialized;
 
 	private TextView publicAddressTextArea;
 	private KinCallback<OrderConfirmation> nativeSpendOrderConfirmationCallback;
@@ -70,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
 		payToUserButton = findViewById(R.id.pay_to_user_button);
 		showPublicAddressButton = findViewById(R.id.show_public_address);
 		publicAddressTextArea = findViewById(R.id.public_text_area);
+		getOrderConfirmationButton = findViewById(R.id.order_confirmation_button);
 		showPublicAddressButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -103,6 +109,13 @@ public class MainActivity extends AppCompatActivity {
 				createNativeEarnOffer();
 			}
 		});
+		getOrderConfirmationButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				enableView(v, false);
+				getOrderConfirmation(JwtUtil.lastId);
+			}
+		});
 		payToUserButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(final View v) {
@@ -116,8 +129,50 @@ public class MainActivity extends AppCompatActivity {
 			}
 		});
 
-		addNativeSpendOffer(nativeSpendOffer);
-		addNativeOfferClickedObserver();
+		startSdk();
+	}
+
+	private void startSdk() {
+		/**
+		 * SignInData should be created with registration JWT {see https://jwt.io/} created securely by server side
+		 * In the the this example {@link SignInRepo#getJWT} generate the JWT locally.
+		 * DO NOT!!!! use this approach in your real app.
+		 * */
+		String jwt = SignInRepo.getJWT(this);
+		Kin.enableLogs(true);
+		Kin.start(getApplicationContext(), jwt, Environment.getPlayground(),
+			new KinCallback<Void>() {
+			@Override
+			public void onResponse(Void response) {
+				Toast.makeText(MainActivity.this, "Starting SDK succeeded", Toast.LENGTH_LONG).show();
+				addNativeSpendOffer(nativeSpendOffer);
+				addNativeOfferClickedObserver();
+				addBalanceObserver();
+				isInitialized = true;
+			}
+
+			@Override
+			public void onFailure(KinEcosystemException error) {
+				Toast.makeText(MainActivity.this, "Starting SDK failed", Toast.LENGTH_LONG).show();
+				Log.e(TAG, "Kin.start() failed with =  " + ErrorUtil.getPrintableStackTrace(error));
+			}
+		}, new KinMigrationListener() {
+			@Override
+			public void onStart() {
+				Toast.makeText(MainActivity.this, "Migration started", Toast.LENGTH_SHORT).show();
+			}
+
+			@Override
+			public void onFinish() {
+				Toast.makeText(MainActivity.this, "Migration finished successfully!", Toast.LENGTH_SHORT).show();
+			}
+
+			@Override
+			public void onError(Exception e) {
+				Log.e(TAG, "Migration onError, e =  " + ErrorUtil.getPrintableStackTrace(e));
+				Toast.makeText(MainActivity.this, "Migration failed with " + e.getMessage(), Toast.LENGTH_SHORT).show();
+			}
+		});
 	}
 
 	private void showPayToUserDialog(final View v) {
@@ -133,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
 					showToast("Pay to user flow started");
 					enableView(v, false);
 					createPayToUserOffer();
+					dialog.dismiss();
 				}
 			})
 			.setNegativeButton("Cancel", null)
@@ -172,7 +228,10 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		addBalanceObserver();
+		// only if sdk is initialized then add the observer.
+		if (isInitialized) {
+			addBalanceObserver();
+		}
 	}
 
 	@Override
@@ -261,7 +320,6 @@ public class MainActivity extends AppCompatActivity {
 		} catch (ClientException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	private void copyToClipboard(CharSequence textToCopy) {
@@ -322,6 +380,7 @@ public class MainActivity extends AppCompatActivity {
 			Kin.launchMarketplace(MainActivity.this);
 		} catch (ClientException e) {
 			e.printStackTrace();
+			showToast("Failed - " + e.getMessage());
 		}
 	}
 
@@ -333,6 +392,8 @@ public class MainActivity extends AppCompatActivity {
 			Kin.purchase(offerJwt, getNativeSpendOrderConfirmationCallback());
 		} catch (ClientException e) {
 			e.printStackTrace();
+			showToast("Failed - " + e.getMessage());
+			enableView(nativeSpendButton, true);
 		}
 	}
 
@@ -343,6 +404,8 @@ public class MainActivity extends AppCompatActivity {
 			Kin.requestPayment(offerJwt, getNativeEarnOrderConfirmationCallback());
 		} catch (ClientException e) {
 			e.printStackTrace();
+			showToast("Failed - " + e.getMessage());
+			enableView(nativeEarnButton, true);
 		}
 	}
 
@@ -354,6 +417,8 @@ public class MainActivity extends AppCompatActivity {
 			Kin.payToUser(offerJwt, getNativePayToUserOrderConfirmationCallback());
 		} catch (ClientException e) {
 			e.printStackTrace();
+			showToast("Failed - " + e.getMessage());
+			enableView(payToUserButton, true);
 		}
 	}
 
@@ -366,17 +431,28 @@ public class MainActivity extends AppCompatActivity {
 				Kin.getOrderConfirmation(offerID, new KinCallback<OrderConfirmation>() {
 					@Override
 					public void onResponse(OrderConfirmation orderConfirmation) {
-						showToast("Offer: " + offerID + " Status is: " + orderConfirmation.getStatus());
+						String msg = "Offer: " + offerID + " Status is: " + orderConfirmation.getStatus() + " jwt = "
+							+ orderConfirmation.getJwtConfirmation();
+						showToast(msg);
+						Log.d(TAG, msg);
+						enableView(getOrderConfirmationButton, true);
 					}
 
 					@Override
-					public void onFailure(KinEcosystemException exception) {
+					public void onFailure(KinEcosystemException e) {
+						Log.d(TAG, "getOrderConfirmation failure = " + Log.getStackTraceString(e));
 						showToast("Failed to get OfferId: " + offerID + " status");
+						enableView(getOrderConfirmationButton, true);
 					}
 				});
 			} catch (ClientException e) {
+				enableView(getOrderConfirmationButton, true);
+				showToast("Failed - " + e.getMessage());
 				e.printStackTrace();
 			}
+		} else {
+			showToast("No Order was sent in this session yet.");
+			enableView(getOrderConfirmationButton, true);
 		}
 	}
 

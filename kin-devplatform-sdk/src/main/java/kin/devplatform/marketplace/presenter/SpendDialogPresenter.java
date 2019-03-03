@@ -10,6 +10,7 @@ import kin.devplatform.bi.events.ConfirmPurchaseButtonTapped;
 import kin.devplatform.bi.events.ConfirmPurchasePageViewed;
 import kin.devplatform.bi.events.SpendOrderCancelled;
 import kin.devplatform.bi.events.SpendOrderCompletionSubmitted;
+import kin.devplatform.bi.events.SpendOrderCompletionSubmitted.Origin;
 import kin.devplatform.bi.events.SpendOrderCreationFailed;
 import kin.devplatform.bi.events.SpendOrderCreationReceived;
 import kin.devplatform.bi.events.SpendOrderCreationRequested;
@@ -23,6 +24,8 @@ import kin.devplatform.network.model.Offer;
 import kin.devplatform.network.model.OfferInfo;
 import kin.devplatform.network.model.OfferInfo.Confirmation;
 import kin.devplatform.network.model.OpenOrder;
+import kin.devplatform.util.ErrorUtil;
+import kin.sdk.migration.common.exception.OperationFailedException;
 
 
 public class SpendDialogPresenter extends BaseDialogPresenter<ISpendDialog> implements ISpendDialogPresenter {
@@ -63,13 +66,15 @@ public class SpendDialogPresenter extends BaseDialogPresenter<ISpendDialog> impl
 	}
 
 	private void createOrder() {
-		eventLogger.send(SpendOrderCreationRequested.create(offer.getId(), false));
+		eventLogger.send(
+			SpendOrderCreationRequested.create(offer.getId(), SpendOrderCreationRequested.Origin.MARKETPLACE));
 		orderRepository.createOrder(offer.getId(), new KinCallback<OpenOrder>() {
 			@Override
 			public void onResponse(OpenOrder response) {
 				openOrder = response;
 				eventLogger.send(SpendOrderCreationReceived
-					.create(offer.getId(), response != null ? response.getId() : null, false));
+					.create(offer.getId(), response != null ? response.getId() : null,
+						SpendOrderCreationReceived.Origin.MARKETPLACE));
 				if (isUserConfirmedPurchase && !isSubmitted) {
 					submitAndSendTransaction();
 				}
@@ -78,8 +83,10 @@ public class SpendDialogPresenter extends BaseDialogPresenter<ISpendDialog> impl
 			@Override
 			public void onFailure(KinEcosystemException exception) {
 				showToast("Oops something went wrong...");
-				eventLogger
-					.send(SpendOrderCreationFailed.create(exception.getCause().getMessage(), offer.getId(), false));
+				eventLogger.send(SpendOrderCreationFailed
+					.create(ErrorUtil.getPrintableStackTrace(exception), offer.getId(),
+						SpendOrderCreationFailed.Origin.MARKETPLACE, String.valueOf(exception.getCode()),
+						exception.getMessage()));
 			}
 		});
 	}
@@ -123,7 +130,7 @@ public class SpendDialogPresenter extends BaseDialogPresenter<ISpendDialog> impl
 			final String addressee = offer.getBlockchainData().getRecipientAddress();
 			final String orderID = openOrder.getId();
 
-			submitOrder(offer.getId(), orderID);
+			submitOrder(openOrder);
 			sendTransaction(addressee, amount, orderID);
 		}
 	}
@@ -166,13 +173,24 @@ public class SpendDialogPresenter extends BaseDialogPresenter<ISpendDialog> impl
 		}, delayMilliseconds);
 	}
 
-	private void sendTransaction(String addressee, BigDecimal amount, String orderID) {
-		blockchainSource.sendTransaction(addressee, amount, orderID, offer.getId());
+	private void sendTransaction(final String addressee, final BigDecimal amount, final String orderID) {
+		new Thread() {
+			@Override
+			public void run() {
+				try {
+					blockchainSource.sendTransaction(addressee, amount, openOrder);
+				} catch (OperationFailedException e) {
+					e.printStackTrace();
+				}
+			}
+		}.start();
 	}
 
-	private void submitOrder(String offerID, String orderID) {
-		eventLogger.send(SpendOrderCompletionSubmitted.create(offerID, orderID, false));
-		orderRepository.submitOrder(offerID, null, orderID, null);
+	private void submitOrder(OpenOrder openOrder) {
+		eventLogger
+			.send(SpendOrderCompletionSubmitted.create(openOrder.getOfferId(), openOrder.getId(), Origin.MARKETPLACE));
+		orderRepository.submitOrder(openOrder, null,
+			kin.devplatform.network.model.Origin.MARKETPLACE, null);
 	}
 
 	private void showToast(String msg) {

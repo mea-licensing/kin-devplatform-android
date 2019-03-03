@@ -1,18 +1,24 @@
 package kin.devplatform.data.auth;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import kin.devplatform.KinCallback;
-import kin.devplatform.base.ObservableData;
 import kin.devplatform.core.network.ApiException;
 import kin.devplatform.data.Callback;
+import kin.devplatform.exception.ClientException;
 import kin.devplatform.network.model.AuthToken;
 import kin.devplatform.network.model.SignInData;
+import kin.devplatform.network.model.UserProperties;
 
 public interface AuthDataSource {
 
 	void setSignInData(@NonNull final SignInData signInData);
 
-	ObservableData<String> getAppID();
+	void isRestorableWallet(String publicAddress, @NonNull KinCallback<Boolean> callback);
+
+	void updateWalletAddress(String address, @NonNull KinCallback<Boolean> callback);
+
+	String getAppID();
 
 	String getDeviceID();
 
@@ -20,7 +26,12 @@ public interface AuthDataSource {
 
 	String getEcosystemUserID();
 
-	void setAuthToken(@NonNull final AuthToken authToken);
+	void setAuthToken(@NonNull final AuthToken authToken) throws ClientException;
+
+	void getAuthToken(@Nullable final KinCallback<AuthToken> callback);
+
+	@Nullable
+	AuthToken getCachedAuthToken();
 
 	AuthToken getAuthTokenSync();
 
@@ -32,9 +43,11 @@ public interface AuthDataSource {
 
 		void setSignInData(@NonNull final SignInData signInData);
 
+		SignInData getSignInData();
+
 		void setAuthToken(@NonNull final AuthToken authToken);
 
-		void getAppId(@NonNull final Callback<String, Void> callback);
+		String getAppId();
 
 		String getDeviceID();
 
@@ -52,10 +65,16 @@ public interface AuthDataSource {
 
 	interface Remote {
 
+		void getAuthToken(@NonNull final Callback<AuthToken, ApiException> callback);
+
 		void setSignInData(@NonNull final SignInData signInData);
 
 		AuthToken getAuthTokenSync();
 
 		void activateAccount(@NonNull final Callback<AuthToken, ApiException> callback);
+
+		void isRestorableWallet(@NonNull String publicAddress, @NonNull final Callback<Boolean, ApiException> callback);
+
+		void updateWalletAddress(@NonNull UserProperties userProperties, @NonNull final Callback<Void, ApiException> callback);
 	}
 }

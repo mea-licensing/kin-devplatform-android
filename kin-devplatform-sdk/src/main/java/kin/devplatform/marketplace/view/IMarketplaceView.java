@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import kin.devplatform.base.IBaseView;
+import kin.devplatform.marketplace.presenter.IMarketplacePresenter;
 import kin.devplatform.marketplace.presenter.ISpendDialogPresenter;
-import kin.devplatform.marketplace.presenter.MarketplacePresenter;
 import kin.devplatform.network.model.Offer;
 import kin.devplatform.poll.view.PollWebViewActivity.PollBundle;
 
-public interface IMarketplaceView extends IBaseView<MarketplacePresenter> {
+public interface IMarketplaceView extends IBaseView<IMarketplacePresenter> {
 
 	void setSpendList(List<Offer> response);
 
@@ -20,6 +20,8 @@ public interface IMarketplaceView extends IBaseView<MarketplacePresenter> {
 	void showOfferActivity(PollBundle pollBundle);
 
 	void showSpendDialog(ISpendDialogPresenter spendDialogPresenter);
+
+	void showMigrationErrorDialog();
 
 	void showToast(String msg);
 

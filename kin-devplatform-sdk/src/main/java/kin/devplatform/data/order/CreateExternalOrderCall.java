@@ -1,12 +1,17 @@
 package kin.devplatform.data.order;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import kin.core.exception.InsufficientKinException;
 import kin.devplatform.base.Observer;
 import kin.devplatform.bi.EventLogger;
+import kin.devplatform.bi.events.EarnOrderCreationFailed;
+import kin.devplatform.bi.events.EarnOrderCreationReceived;
+import kin.devplatform.bi.events.PayToUserOrderCreationFailed;
+import kin.devplatform.bi.events.PayToUserOrderCreationReceived;
 import kin.devplatform.bi.events.SpendOrderCreationFailed;
 import kin.devplatform.bi.events.SpendOrderCreationReceived;
 import kin.devplatform.core.network.ApiException;
@@ -15,13 +20,18 @@ import kin.devplatform.data.Callback;
 import kin.devplatform.data.blockchain.BlockchainSource;
 import kin.devplatform.data.model.Balance;
 import kin.devplatform.data.model.Payment;
+import kin.devplatform.data.order.OrderDataSource.Remote;
 import kin.devplatform.exception.KinEcosystemException;
+import kin.devplatform.exception.MigrationNeededException;
 import kin.devplatform.network.model.JWTBodyPaymentConfirmationResult;
 import kin.devplatform.network.model.Offer.OfferType;
 import kin.devplatform.network.model.OpenOrder;
 import kin.devplatform.network.model.Order;
 import kin.devplatform.network.model.Order.Status;
 import kin.devplatform.util.ErrorUtil;
+import kin.sdk.migration.common.KinSdkVersion;
+import kin.sdk.migration.common.exception.InsufficientKinException;
+import kin.sdk.migration.common.exception.OperationFailedException;
 
 class CreateExternalOrderCall extends Thread {
 
@@ -30,28 +40,40 @@ class CreateExternalOrderCall extends Thread {
 	private final String orderJwt;
 	private final ExternalOrderCallbacks externalOrderCallbacks;
 	private final EventLogger eventLogger;
+	private final long paymentListeningTimeout;
 
 	private OpenOrder openOrder;
 	private MainThreadExecutor mainThreadExecutor = new MainThreadExecutor();
 
-	CreateExternalOrderCall(@NonNull OrderDataSource.Remote remote, @NonNull BlockchainSource blockchainSource,
+	CreateExternalOrderCall(@NonNull Remote remote, @NonNull BlockchainSource blockchainSource,
 		@NonNull String orderJwt, @NonNull EventLogger eventLogger,
-		@NonNull ExternalOrderCallbacks externalOrderCallbacks) {
+		@NonNull ExternalOrderCallbacks externalOrderCallbacks, long paymentListeningTimeoutMillis) {
 		this.remote = remote;
 		this.blockchainSource = blockchainSource;
 		this.orderJwt = orderJwt;
 		this.eventLogger = eventLogger;
 		this.externalOrderCallbacks = externalOrderCallbacks;
+		this.paymentListeningTimeout = paymentListeningTimeoutMillis;
 	}
 
 	@Override
 	public void run() {
 		try {
-			// Create external order
 			openOrder = remote.createExternalOrderSync(orderJwt);
+
+			// Check if the kin account sdk has the same blockchain version as the server.
+			if (blockchainSource.getKinAccount() != null) {
+				KinSdkVersion serverKinSdkVersion = KinSdkVersion.get(openOrder.getBlockchainData().getBlockchainVersion());
+				if (serverKinSdkVersion != blockchainSource.getKinAccount().getKinSdkVersion()) {
+					remote.cancelOrderSync(openOrder.getId());
+					onOrderFailed(new MigrationNeededException());
+					return;
+				}
+			}
+
 			sendOrderCreationReceivedEvent();
 
-			if (openOrder.getOfferType() == OfferType.SPEND || openOrder.getOfferType() == OfferType.PAY_TO_USER) {
+			if (doesClientSendsTransaction(openOrder)) {
 				Balance balance = blockchainSource.getBalance();
 				if (balance.getAmount().intValue() < openOrder.getAmount()) {
 					remote.cancelOrderSync(openOrder.getId());
@@ -65,6 +87,10 @@ class CreateExternalOrderCall extends Thread {
 					});
 					return;
 				}
+			} else {
+				// start listen to payment in earn cases, before onOrderCreated, in order to listen before server sends transaction
+				// server will send transaction in response to 'submit order' call.
+				listenToPaymentsOnBlockchain(openOrder.getId());
 			}
 
 			runOnMainThread(new Runnable() {
@@ -84,57 +110,97 @@ class CreateExternalOrderCall extends Thread {
 			return;
 		}
 
-		if (externalOrderCallbacks instanceof ExternalSpendOrderCallbacks) {
-			blockchainSource.sendTransaction(openOrder.getBlockchainData().getRecipientAddress(),
-				new BigDecimal(openOrder.getAmount()), openOrder.getId(), openOrder.getOfferId());
-
-			runOnMainThread(new Runnable() {
-				@Override
-				public void run() {
-					((ExternalSpendOrderCallbacks) externalOrderCallbacks).onTransactionSent(openOrder);
-				}
-			});
+		if (doesClientSendsTransaction(openOrder)) {
+			performTransactionSending();
 		}
+	}
 
-		//Listen for payments, make sure the transaction succeed.
-		blockchainSource.addPaymentObservable(new Observer<Payment>() {
+	private void listenToPaymentsOnBlockchain(final String orderId) {
+		final Handler handler = new Handler(Looper.getMainLooper());
+		final Observer<Payment> paymentObserver = new Observer<Payment>() {
 			@Override
 			public void onChanged(final Payment payment) {
 				if (isPaymentOrderEquals(payment, openOrder.getId())) {
-					if (payment.isSucceed()) {
-						getOrder(payment.getOrderID());
-					} else {
-						if (externalOrderCallbacks instanceof ExternalSpendOrderCallbacks) {
-							runOnMainThread(new Runnable() {
-								@Override
-								public void run() {
-									((ExternalSpendOrderCallbacks) externalOrderCallbacks)
-										.onTransactionFailed(openOrder,
-											ErrorUtil.getBlockchainException(payment.getException()));
-								}
-							});
-						}
-					}
+					handlePaymentListenerOnChanged(payment);
 					blockchainSource.removePaymentObserver(this);
+					handler.removeCallbacksAndMessages(null);
 				}
 			}
+		};
+		handler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				blockchainSource.removePaymentObserver(paymentObserver);
+				getOrder(orderId);
+			}
+		}, paymentListeningTimeout);
+		blockchainSource.addPaymentObservable(paymentObserver);
+	}
+
+	private void handlePaymentListenerOnChanged(final Payment payment) {
+		if (payment.isSucceed()) {
+			getOrder(payment.getOrderID());
+		} else {
+			runOnMainThread(new Runnable() {
+				@Override
+				public void run() {
+					((ExternalSpendOrderCallbacks) externalOrderCallbacks)
+						.onTransactionFailed(openOrder, ErrorUtil.getBlockchainException(payment.getException()));
+				}
+			});
+		}
+	}
+
+	private void performTransactionSending() {
+		fireOnTransactionSent();
+		try {
+			blockchainSource.sendTransaction(openOrder.getBlockchainData().getRecipientAddress(),
+				new BigDecimal(openOrder.getAmount()), openOrder);
+			getOrder(openOrder.getId());
+		} catch (final OperationFailedException e) {
+			runOnMainThread(new Runnable() {
+				@Override
+				public void run() {
+					((ExternalSpendOrderCallbacks) externalOrderCallbacks)
+						.onTransactionFailed(openOrder, ErrorUtil.getBlockchainException(e));
+				}
+			});
+		}
+	}
+
+	private void fireOnTransactionSent() {
+		runOnMainThread(new Runnable() {
+			@Override
+			public void run() {
+				((ExternalSpendOrderCallbacks) externalOrderCallbacks).onTransactionSent(openOrder);
+			}
 		});
+	}
+
+	private boolean doesClientSendsTransaction(OpenOrder order) {
+		return order.getOfferType() == OfferType.SPEND || order.getOfferType() == OfferType.PAY_TO_USER;
 	}
 
 	private void sendOrderCreationFailedEvent(ApiException exception) {
 		if (openOrder != null && openOrder.getOfferType() != null) {
 			switch (openOrder.getOfferType()) {
 				case SPEND:
-					final Throwable cause = exception.getCause();
-					final String reason = cause != null ? cause.getMessage() : exception.getMessage();
-					eventLogger.send(SpendOrderCreationFailed.create(reason, openOrder.getOfferId(), true));
+					eventLogger.send(SpendOrderCreationFailed
+						.create(ErrorUtil.getPrintableStackTrace(exception), openOrder.getOfferId(),
+							SpendOrderCreationFailed.Origin.EXTERNAL, String.valueOf(exception.getCode()),
+							exception.getMessage()));
 					break;
 				case EARN:
-					//TODO add event
-					// We don't have event correctly
+					eventLogger.send(EarnOrderCreationFailed
+						.create(ErrorUtil.getPrintableStackTrace(exception), openOrder.getOfferId(),
+							EarnOrderCreationFailed.Origin.EXTERNAL, String.valueOf(exception.getCode()),
+							exception.getMessage()));
+					break;
 				case PAY_TO_USER:
-					//TODO add event
-					// We don't have event correctly
+					eventLogger.send(PayToUserOrderCreationFailed
+						.create(ErrorUtil.getPrintableStackTrace(exception), openOrder.getOfferId(),
+							PayToUserOrderCreationFailed.Origin.EXTERNAL, String.valueOf(exception.getCode()),
+							exception.getMessage()));
 					break;
 			}
 
@@ -146,10 +212,16 @@ class CreateExternalOrderCall extends Thread {
 			switch (openOrder.getOfferType()) {
 				case SPEND:
 					eventLogger.send(SpendOrderCreationReceived
-						.create(openOrder.getOfferId(), openOrder.getId(), true));
+						.create(openOrder.getOfferId(), openOrder.getId(), SpendOrderCreationReceived.Origin.EXTERNAL));
 					break;
 				case EARN:
+					eventLogger.send(EarnOrderCreationReceived
+						.create(openOrder.getOfferId(), openOrder.getId(), EarnOrderCreationReceived.Origin.EXTERNAL));
+					break;
 				case PAY_TO_USER:
+					eventLogger.send(PayToUserOrderCreationReceived
+						.create(openOrder.getOfferId(), openOrder.getId(),
+							PayToUserOrderCreationReceived.Origin.EXTERNAL));
 					break;
 			}
 		}

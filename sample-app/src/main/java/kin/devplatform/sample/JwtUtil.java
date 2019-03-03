@@ -37,8 +37,9 @@ public class JwtUtil {
 	private static final String JWT_HEADER_TYP = "typ";
 	private static final String JWT = "jwt";
 
-	public static String generateSignInExampleJWT(@NonNull String appID, @NonNull String userId) {
+	public static String lastId;
 
+	public static String generateSignInExampleJWT(@NonNull String appID, @NonNull String userId) {
 		String jwt = getBasicJWT(appID)
 			.setSubject(JWT_SUBJECT_REGISTER)
 			.claim(JWT_KEY_USER_ID, userId)
@@ -70,9 +71,9 @@ public class JwtUtil {
 		String jwt = getBasicJWT(appID)
 			.setSubject(JWT_SUBJECT_PAY_TO_USER)
 			.claim(JWT_CLAIM_OBJECT_OFFER_PART, createOfferPartExampleObject())
-			.claim(JWT_CLAIM_OBJECT_SENDER_PART, new JWTSenderPart(userID, "Uploaded Profile Picture", "Lion sticker"))
+			.claim(JWT_CLAIM_OBJECT_SENDER_PART, new JWTSenderPart(userID, "Pay to user", "P2P example"))
 			.claim(JWT_CLAIM_OBJECT_RECIPIENT_PART,
-				new JWTRecipientPart(recipientUserID, "Received Kin", "Upload profile picture"))
+				new JWTRecipientPart(recipientUserID, "P2P - Received Kin", "Received via P2P"))
 			.signWith(SignatureAlgorithm.ES256, getES256PrivateKey()).compact();
 		return jwt;
 	}
@@ -105,6 +106,7 @@ public class JwtUtil {
 
 	private static JWTOfferPart createOfferPartExampleObject() {
 		int randomID = new Random().nextInt((9999 - 1) + 1) + 1;
+		lastId = String.valueOf(randomID);
 		return new JWTOfferPart(String.valueOf(randomID), 10);
 	}
 

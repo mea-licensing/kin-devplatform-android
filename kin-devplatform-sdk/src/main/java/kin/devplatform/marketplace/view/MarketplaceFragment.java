@@ -159,14 +159,14 @@ public class MarketplaceFragment extends Fragment implements IMarketplaceView {
 		new AlertDialog.Builder(getContext())
 			.setTitle(R.string.kinecosystem_confirm)
 			.setMessage(String.format(getString(R.string.kinecosystem_confirm_purchase), offer.getTitle(), offer.getAmount()))
-            .setPositiveButton(R.string.kinecosystem_ok, (dialog, which) -> {
-                try {
-                    onClick.call();
-                    dialog.dismiss();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            })
+            .setPositiveButton(R.string.kinecosystem_ok, (dialog, i) -> {
+				try {
+					onClick.call();
+					dialog.dismiss();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			})
 			.setNegativeButton(R.string.kinecosystem_cancel, (dialog, which) -> {
 				dialog.dismiss();
 			})

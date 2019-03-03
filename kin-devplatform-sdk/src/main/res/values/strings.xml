@@ -3,7 +3,6 @@
     <string name="kinecosystem_kin_marketplace">Kin Marketplace (Beta)</string>
     <string name="kinecosystem_transaction_history">Transaction History</string>
     <string name="kinecosystem_settings">Settings</string>
-    <string name="kinecosystem_ok">OK</string>
 
     <!--Button-->
     <string name="kinecosystem_more">MORE</string>
@@ -47,10 +46,8 @@
 
     <!--Menu-->
     <string name="kinecosystem_info_menu">Info</string>
-    <string name="kinecosystem_ok">OK</string>
     <string name="kinecosystem_confirm_purchase">Purchase %s for %d KIN?</string>
     <string name="kinecosystem_cancel">Cancel</string>
-
-
+    <string name="kinecosystem_ok">OK</string>
 </resources>
 

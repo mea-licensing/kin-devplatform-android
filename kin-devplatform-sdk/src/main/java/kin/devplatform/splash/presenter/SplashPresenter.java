@@ -96,11 +96,5 @@ public class SplashPresenter extends BasePresenter<ISplashView> implements ISpla
 	public void onAnimationEnded() {
 		animationEnded = true;
 		navigateToMarketplace();
-
-		try {
-            Kin.getOnActivatedListener().call();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 }

@@ -4,13 +4,15 @@ apply from: '../dependencies.gradle'
 android {
     compileSdkVersion 26
 
-
-
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 26
         versionCode 1
         versionName "${KIN_ECOSYSTEM_CORE_VERSION_NAME}"
+    }
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
     }
 }
 
@@ -20,3 +22,5 @@ dependencies {
     implementation devDependencies.okhttp3
     implementation devDependencies.loginInterceptor3
 }
+
+apply from: 'deploy.gradle'

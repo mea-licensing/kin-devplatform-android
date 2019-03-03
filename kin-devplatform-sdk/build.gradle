@@ -15,8 +15,8 @@ android {
         consumerProguardFiles 'proguard-rules.pro'
     }
     compileOptions {
-        sourceCompatibility = '1.8'
-        targetCompatibility = '1.8'
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
     }
 }
 
@@ -35,3 +35,5 @@ dependencies {
     testImplementation testingDependencies.mockito
     testImplementation testingDependencies.robolectric
 }
+
+apply from: 'deploy.gradle'

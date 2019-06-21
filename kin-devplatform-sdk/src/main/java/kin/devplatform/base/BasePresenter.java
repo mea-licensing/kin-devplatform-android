@@ -1,6 +1,6 @@
 package kin.devplatform.base;
 
-import android.support.annotation.CallSuper;
+import androidx.annotation.CallSuper;
 
 public class BasePresenter<T extends IBaseView> implements IBasePresenter<T> {
 

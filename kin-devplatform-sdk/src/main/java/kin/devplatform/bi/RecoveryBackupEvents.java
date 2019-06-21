@@ -1,6 +1,6 @@
 package kin.devplatform.bi;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import kin.devplatform.bi.events.BackupCompletedPageViewed;
 import kin.devplatform.bi.events.BackupCreatePasswordBackButtonTapped;
 import kin.devplatform.bi.events.BackupCreatePasswordNextButtonTapped;

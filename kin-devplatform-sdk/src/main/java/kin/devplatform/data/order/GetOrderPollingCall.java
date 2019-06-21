@@ -2,7 +2,7 @@ package kin.devplatform.data.order;
 
 import static kin.devplatform.exception.ClientException.INTERNAL_INCONSISTENCY;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import kin.devplatform.core.network.ApiException;
 import kin.devplatform.data.Callback;
 import kin.devplatform.network.model.Order;

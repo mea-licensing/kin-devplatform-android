@@ -3,7 +3,7 @@ package kin.devplatform;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class ConfigurationLocal implements Configuration.Local {
 

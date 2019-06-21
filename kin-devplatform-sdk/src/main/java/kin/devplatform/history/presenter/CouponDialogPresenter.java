@@ -1,6 +1,6 @@
 package kin.devplatform.history.presenter;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import kin.devplatform.R;
 import kin.devplatform.base.BaseDialogPresenter;
 import kin.devplatform.bi.EventLogger;

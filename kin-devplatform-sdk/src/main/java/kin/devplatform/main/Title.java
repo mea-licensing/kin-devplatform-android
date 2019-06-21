@@ -3,7 +3,7 @@ package kin.devplatform.main;
 import static kin.devplatform.main.Title.MARKETPLACE_TITLE;
 import static kin.devplatform.main.Title.ORDER_HISTORY_TITLE;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 

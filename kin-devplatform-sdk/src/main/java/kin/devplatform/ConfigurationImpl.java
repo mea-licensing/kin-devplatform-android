@@ -17,7 +17,7 @@ import static kin.devplatform.core.network.ApiClient.POST;
 
 import android.os.Build;
 import android.os.Build.VERSION;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.TextUtils;
 import java.io.IOException;
 import java.util.Locale;

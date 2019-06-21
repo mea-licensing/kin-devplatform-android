@@ -5,7 +5,7 @@ import static kin.devplatform.settings.view.ISettingsView.GRAY;
 import static kin.devplatform.settings.view.ISettingsView.ITEM_BACKUP;
 
 import android.content.Intent;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.kin.ecosystem.recovery.BackupCallback;
 import com.kin.ecosystem.recovery.BackupManager;
 import com.kin.ecosystem.recovery.RestoreCallback;

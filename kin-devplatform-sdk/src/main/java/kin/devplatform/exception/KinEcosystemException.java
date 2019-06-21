@@ -1,6 +1,6 @@
 package kin.devplatform.exception;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class KinEcosystemException extends Exception {
 

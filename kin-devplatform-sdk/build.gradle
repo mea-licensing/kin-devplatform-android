@@ -1,15 +1,12 @@
 apply plugin: 'com.android.library'
 apply from: '../dependencies.gradle'
-//publish to jitpack
-apply plugin: 'maven'
-group = 'com.github.kinfoundation'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 29
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 26
+        targetSdkVersion 29
         versionCode 1
         versionName "${KIN_ECOSYSTEM_SDK_VERSION_NAME}"
         consumerProguardFiles 'proguard-rules.pro'
@@ -26,8 +23,8 @@ dependencies {
     implementation 'com.github.kinecosystem:kin-migration-module-android:1.0.8'
     implementation 'com.github.kinecosystem.kin-ecosystem-android-sdk:recovery:d73ef56'
     api 'com.github.kinecosystem:kin-utils-android:1.1'
-    implementation devDependencies.appCompat_v7
-    implementation devDependencies.recyclerView_v7
+    implementation devDependencies.appCompat
+    implementation devDependencies.recyclerView
     implementation devDependencies.constraintLayout
     implementation devDependencies.picasso
 

@@ -3,7 +3,7 @@ package kin.devplatform.data.order;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import kin.devplatform.core.util.ExecutorsUtil;
 import kin.devplatform.data.Callback;
 

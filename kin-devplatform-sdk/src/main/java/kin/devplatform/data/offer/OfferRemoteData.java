@@ -1,6 +1,6 @@
 package kin.devplatform.data.offer;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import java.util.List;
 import java.util.Map;
 import kin.devplatform.core.network.ApiCallback;

@@ -1,6 +1,6 @@
 package kin.devplatform.data.settings;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class SettingsDataSourceImpl implements SettingsDataSource {
 

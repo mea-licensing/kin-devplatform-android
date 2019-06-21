@@ -2,7 +2,7 @@ package kin.devplatform.data.blockchain;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 public class BlockchainSourceLocal implements BlockchainSource.Local {
 

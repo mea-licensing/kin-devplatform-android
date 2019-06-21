@@ -3,7 +3,7 @@ package kin.devplatform.data.auth;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import kin.devplatform.core.util.ExecutorsUtil;
 import kin.devplatform.network.model.AuthToken;
 import kin.devplatform.network.model.SignInData;

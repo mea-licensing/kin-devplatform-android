@@ -2,7 +2,7 @@ package kin.devplatform.sample.model;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import java.util.UUID;
 import kin.devplatform.sample.BuildConfig;
 import kin.devplatform.sample.JwtUtil;

@@ -2,7 +2,7 @@ package kin.devplatform.data.order;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;

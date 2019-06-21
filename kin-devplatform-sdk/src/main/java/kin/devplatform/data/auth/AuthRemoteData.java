@@ -1,7 +1,7 @@
 package kin.devplatform.data.auth;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import kin.devplatform.core.network.ApiCallback;

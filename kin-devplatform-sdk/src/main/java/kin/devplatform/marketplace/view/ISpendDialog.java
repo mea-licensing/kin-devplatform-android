@@ -1,6 +1,6 @@
 package kin.devplatform.marketplace.view;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import kin.devplatform.base.IBottomDialog;
 import kin.devplatform.marketplace.presenter.ISpendDialogPresenter;
 

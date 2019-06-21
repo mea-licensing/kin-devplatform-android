@@ -2,7 +2,7 @@ package kin.devplatform.accountmanager;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import kin.devplatform.accountmanager.AccountManager.AccountState;
 
 public class AccountManagerLocal implements AccountManager.Local {

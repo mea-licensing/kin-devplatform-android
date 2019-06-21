@@ -1,6 +1,6 @@
 package kin.devplatform.bi;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import kin.devplatform.bi.events.RestoreAreYouSureCancelButtonTapped;
 import kin.devplatform.bi.events.RestoreAreYouSureOkButtonTapped;
 import kin.devplatform.bi.events.RestorePasswordDoneButtonTapped;

@@ -1,7 +1,7 @@
 package kin.devplatform.history.presenter;
 
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;

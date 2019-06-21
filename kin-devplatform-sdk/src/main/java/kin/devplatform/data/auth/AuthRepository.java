@@ -3,8 +3,8 @@ package kin.devplatform.data.auth;
 import static kin.devplatform.Log.ERROR;
 import static kin.devplatform.exception.ClientException.INCORRECT_APP_ID;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import java.util.Calendar;
 import java.util.Date;
 import kin.devplatform.KinCallback;

@@ -3,8 +3,8 @@ package kin.devplatform.marketplace.presenter;
 
 import static kin.devplatform.exception.BlockchainException.MIGRATION_IS_NEEDED;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import java.math.BigDecimal;

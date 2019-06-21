@@ -8,7 +8,7 @@ import static kin.devplatform.main.Title.MARKETPLACE_TITLE;
 import static kin.devplatform.main.Title.ORDER_HISTORY_TITLE;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import java.math.BigDecimal;
 import kin.devplatform.base.BasePresenter;
 import kin.devplatform.base.Observer;

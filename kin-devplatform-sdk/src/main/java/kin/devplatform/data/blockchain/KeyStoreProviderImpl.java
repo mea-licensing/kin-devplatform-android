@@ -5,8 +5,8 @@ import static com.kin.ecosystem.recovery.exception.BackupException.CODE_RESTORE_
 import static com.kin.ecosystem.recovery.exception.BackupException.CODE_RESTORE_INVALID_KEYSTORE_FORMAT;
 import static com.kin.ecosystem.recovery.exception.BackupException.CODE_UNEXPECTED;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.kin.ecosystem.recovery.KeyStoreProvider;
 import com.kin.ecosystem.recovery.Validator;
 import com.kin.ecosystem.recovery.exception.BackupException;

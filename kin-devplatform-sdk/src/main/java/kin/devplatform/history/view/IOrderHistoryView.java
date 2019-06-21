@@ -1,6 +1,6 @@
 package kin.devplatform.history.view;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import java.util.List;
 import kin.devplatform.base.IBaseView;
 import kin.devplatform.history.presenter.ICouponDialogPresenter;

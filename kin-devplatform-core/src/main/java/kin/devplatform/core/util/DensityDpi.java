@@ -5,7 +5,7 @@ import static kin.devplatform.core.util.DensityDpi.HDPI;
 import static kin.devplatform.core.util.DensityDpi.XHDPI;
 import static kin.devplatform.core.util.DensityDpi.XXHDPI;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 

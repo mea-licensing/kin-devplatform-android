@@ -7,9 +7,9 @@ import static kin.devplatform.util.ErrorUtil.getClientException;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import android.text.format.DateUtils;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;

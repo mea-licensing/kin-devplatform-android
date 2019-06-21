@@ -5,7 +5,7 @@ import static kin.devplatform.exception.BlockchainException.MIGRATION_IS_NEEDED;
 import static kin.devplatform.poll.view.IPollWebView.ORDER_SUBMISSION_FAILED;
 import static kin.devplatform.poll.view.IPollWebView.SOMETHING_WENT_WRONG;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import kin.devplatform.KinCallback;
 import kin.devplatform.base.BasePresenter;
 import kin.devplatform.base.Observer;

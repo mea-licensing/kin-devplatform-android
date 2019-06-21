@@ -2,7 +2,7 @@ package kin.devplatform.accountmanager;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.format.DateUtils;
 import kin.devplatform.KinCallback;
 import kin.devplatform.Log;

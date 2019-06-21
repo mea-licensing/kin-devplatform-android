@@ -1,6 +1,6 @@
 package kin.devplatform.base;
 
-import android.support.annotation.StringRes;
+import androidx.annotation.StringRes;
 
 public interface IBottomDialog<T extends IBottomDialogPresenter> extends IBaseView<T> {
 

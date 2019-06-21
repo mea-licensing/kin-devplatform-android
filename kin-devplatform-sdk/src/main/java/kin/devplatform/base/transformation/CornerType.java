@@ -10,7 +10,7 @@ import static kin.devplatform.base.transformation.CornerType.TOP;
 import static kin.devplatform.base.transformation.CornerType.TOP_LEFT;
 import static kin.devplatform.base.transformation.CornerType.TOP_RIGHT;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 

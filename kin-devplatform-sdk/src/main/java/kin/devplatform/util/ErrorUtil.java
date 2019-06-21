@@ -14,7 +14,7 @@ import static kin.devplatform.exception.ServiceException.SERVICE_ERROR;
 import static kin.devplatform.exception.ServiceException.TIMEOUT_ERROR;
 
 import android.annotation.SuppressLint;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.Log;
 import java.io.PrintWriter;
 import java.io.StringWriter;

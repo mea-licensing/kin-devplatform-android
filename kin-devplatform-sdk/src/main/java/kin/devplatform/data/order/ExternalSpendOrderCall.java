@@ -1,6 +1,6 @@
 package kin.devplatform.data.order;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import kin.devplatform.bi.EventLogger;
 import kin.devplatform.data.blockchain.BlockchainSource;
 import kin.devplatform.data.order.OrderDataSource.Remote;

@@ -4,7 +4,7 @@ import static kin.devplatform.core.util.DensityDpi.XXHDPI;
 import static kin.devplatform.core.util.StringUtil.getAmountFormatted;
 
 import android.content.Context;
-import android.support.annotation.LayoutRes;
+import androidx.annotation.LayoutRes;
 import android.view.View;
 import kin.devplatform.R;
 import kin.devplatform.base.AbstractBaseViewHolder;

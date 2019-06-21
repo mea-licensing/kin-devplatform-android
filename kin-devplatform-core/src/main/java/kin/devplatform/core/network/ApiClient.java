@@ -4,7 +4,7 @@
  */
 package kin.devplatform.core.network;
 
-import android.support.annotation.StringDef;
+import androidx.annotation.StringDef;
 import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.io.IOException;
